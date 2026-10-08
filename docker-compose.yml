@@ -28,17 +28,17 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
-  # posts-gateway-api:
-  #   image: ${GATEWAY_API_IMAGE}
-  #   container_name: posts-gateway-api
-  #   env_file:
-  #     - .env
-  #   environment:
-  #     AuthServiceUrl: http://posts-auth-api:8080/
-  #     ReverseProxy__Clusters__upstream__Destinations__destination1__Address: http://posts-auth-api:8080/
-  #   depends_on:
-  #     - posts-auth-api
-  #   restart: unless-stopped
+  posts-gateway-api:
+    image: ${GATEWAY_API_IMAGE}
+    container_name: posts-gateway-api
+    env_file:
+      - .env
+    environment:
+      AuthServiceUrl: http://posts-auth-api:8080/
+      ReverseProxy__Clusters__upstream__Destinations__destination1__Address: http://posts-auth-api:8080/
+    depends_on:
+      - posts-auth-api
+    restart: unless-stopped
 
   caddy:
     image: caddy:${CADDY_VERSION:-alpine}
@@ -52,6 +52,7 @@ services:
       - caddy_data:/data
       - caddy_config:/config
     depends_on:
+      - posts-gateway-api
       - posts-loki-read
       - posts-loki-write
       - posts-loki-backend
