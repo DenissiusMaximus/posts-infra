@@ -1,6 +1,6 @@
 # Posts infrastructure
 
-This folder is the VM deployment bundle. Application containers are pulled from GHCR; the VM does not build them.
+This  folder is the VM deployment bundle. Application containers are pulled from GHCR; the VM does not build them.
 
 ## First deployment
 
