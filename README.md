@@ -45,6 +45,12 @@ separate files:
 Keep the real files out of source control. They are created from the tracked
 `env/*.env.example` templates and may contain secrets.
 
+The auth API accepts the `DB__HOST`, `DB__PORT`, `DB__USER`, `DB__PASSWORD`, and
+`DB__NAME` names used by its deployment template, as well as the legacy
+`DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, and `DB_NAME` names used by the
+local development compose file. Keep the API database values aligned with
+`env/auth-db.env` (the template defaults to database and user `auth`).
+
 ## Webhook deployment
 
 The GitHub Actions workflow only sends a POST request to the webhook. The
