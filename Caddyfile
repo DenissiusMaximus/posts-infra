@@ -1,0 +1,14 @@
+{
+    email deniskramar07@gmail.com
+    metrics
+}
+
+posts.lacarte.dev {
+    reverse_proxy posts-gateway-api:8080
+}
+
+:3100 {
+    @push path /loki/api/v1/push
+    reverse_proxy @push posts-loki-write:3100
+    reverse_proxy posts-loki-read:3100
+}
