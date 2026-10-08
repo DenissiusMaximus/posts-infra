@@ -2,10 +2,8 @@ services:
   posts-auth-db:
     image: postgres:16-alpine
     container_name: posts-auth-db
-    environment:
-      POSTGRES_DB: ${AUTH_DB_NAME}
-      POSTGRES_USER: ${AUTH_DB_USER}
-      POSTGRES_PASSWORD: ${AUTH_DB_PASSWORD}
+    env_file:
+      - ./env/auth-db.env
     volumes:
       - posts_auth_pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -19,7 +17,7 @@ services:
     image: ${AUTH_API_IMAGE}
     container_name: posts-auth-api
     env_file:
-      - .env
+      - ./env/auth-api.env
     environment:
       DB_HOST: posts-auth-db
       DB_PORT: 5432
@@ -32,10 +30,7 @@ services:
     image: ${GATEWAY_API_IMAGE}
     container_name: posts-gateway-api
     env_file:
-      - .env
-    environment:
-      AuthServiceUrl: http://posts-auth-api:8080/
-      ReverseProxy__Clusters__upstream__Destinations__destination1__Address: http://posts-auth-api:8080/
+      - ./env/gateway-api.env
     depends_on:
       - posts-auth-api
     restart: unless-stopped
@@ -74,9 +69,8 @@ services:
     image: grafana/loki:${LOKI_VERSION:-latest}
     container_name: posts-loki-read
     command: "-config.file=/etc/loki/config.yaml -target=read -config.expand-env=true"
-    environment:
-      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
-      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+    env_file:
+      - ./env/loki-read.env
     ports:
       - "${LOKI_READ_PORT:-3101}:3100"
       - "7946"
@@ -100,9 +94,8 @@ services:
     image: grafana/loki:${LOKI_VERSION:-latest}
     container_name: posts-loki-write
     command: "-config.file=/etc/loki/config.yaml -target=write -config.expand-env=true"
-    environment:
-      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
-      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+    env_file:
+      - ./env/loki-write.env
     ports:
       - "${LOKI_WRITE_PORT:-3102}:3100"
       - "7946"
@@ -125,9 +118,8 @@ services:
     container_name: posts-loki-backend
     volumes:
       - ./loki-config.yaml:/etc/loki/config.yaml
-    environment:
-      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
-      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+    env_file:
+      - ./env/loki-backend.env
     ports:
       - "3100"
       - "7946"
@@ -167,11 +159,8 @@ services:
         mkdir -p /data/loki-data && \
         mkdir -p /data/loki-ruler && \
         minio server /data
-    environment:
-      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
-      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
-      - MINIO_PROMETHEUS_AUTH_TYPE=${MINIO_PROMETHEUS_AUTH_TYPE}
-      - MINIO_UPDATE=${MINIO_UPDATE}
+    env_file:
+      - ./env/minio.env
     ports:
       - "9000"
     volumes:
@@ -187,10 +176,10 @@ services:
   posts-grafana:
     image: grafana/grafana:${GRAFANA_VERSION:-latest}
     container_name: posts-grafana
+    env_file:
+      - ./env/grafana.env
     environment:
-      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
-      - GF_AUTH_ANONYMOUS_ENABLED=${GF_AUTH_ANONYMOUS_ENABLED:-true}
-      - GF_AUTH_ANONYMOUS_ORG_ROLE=${GF_AUTH_ANONYMOUS_ORG_ROLE:-Admin}
+      GF_PATHS_PROVISIONING: /etc/grafana/provisioning
     depends_on:
       - caddy
     entrypoint:
@@ -208,7 +197,7 @@ services:
             jsonData:
               httpHeaderName1: "X-Scope-OrgID"
             secureJsonData:
-              httpHeaderValue1: "${LOKI_TENANT_ID:-tenant1}"
+              httpHeaderValue1: "$${LOKI_TENANT_ID}"
         EOF
         /run.sh
     ports:

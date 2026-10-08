@@ -8,6 +8,7 @@ Requirements: Docker Engine with the Compose plugin and access to the GHCR packa
 
 ```bash
 cp .env.example .env
+for file in env/*.env.example; do cp "$file" "${file%.example}"; done
 nano .env
 
 docker login ghcr.io
@@ -22,6 +23,50 @@ On Windows PowerShell, copy the environment file with:
 
 ```powershell
 Copy-Item .env.example .env
+Get-ChildItem env\*.env.example | ForEach-Object {
+    Copy-Item $_ ($_.FullName -replace '\.example$', '')
+}
+```
+
+The root `.env` contains only Docker Compose settings such as image names,
+versions, and host ports. Runtime variables are configured per container in
+separate files:
+
+| Container | Environment file |
+| --- | --- |
+| `posts-auth-db` | `env/auth-db.env` |
+| `posts-auth-api` | `env/auth-api.env` |
+| `posts-gateway-api` | `env/gateway-api.env` |
+| `posts-loki-read` | `env/loki-read.env` |
+| `posts-loki-write` | `env/loki-write.env` |
+| `posts-loki-backend` | `env/loki-backend.env` |
+| `posts-minio` | `env/minio.env` |
+| `posts-grafana` | `env/grafana.env` |
+
+Keep the real files out of source control. They are created from the tracked
+`env/*.env.example` templates and may contain secrets.
+
+## Webhook deployment
+
+The GitHub Actions workflow only sends a POST request to the webhook. The
+webhook's deploy script must pull and restart the Compose services explicitly:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd /srv/app/posts-infra
+docker compose pull posts-auth-api posts-gateway-api
+docker compose up -d posts-auth-api posts-gateway-api
+```
+
+The service name is `posts-auth-api`; `posts-auth` does not exist in this
+Compose project. After updating the script, run it manually once to verify the
+deployment:
+
+```bash
+sudo /srv/app/posts-webhook/deploy.sh
+sudo docker compose ps
 ```
 
 ## Image list
@@ -55,12 +100,15 @@ NOTIFICATIONS_API_IMAGE=ghcr.io/grid-mint/notifications/api:latest
 		image: ${NOTIFICATIONS_API_IMAGE}
 		container_name: posts-notifications-api
 		env_file:
-			- .env
+			- ./env/notifications-api.env
 		depends_on:
 			posts-auth-db:
 				condition: service_healthy
 		restart: unless-stopped
 ```
+
+Create `env/notifications-api.env.example` beside the Compose service, copy it
+to `env/notifications-api.env`, and put only this container's variables in it.
 
 The service automatically joins the default Compose network and can reach other services by their Compose names, for example `http://posts-auth-api:8080`. If it needs Loki access, add `networks: [loki]` as well.
 
