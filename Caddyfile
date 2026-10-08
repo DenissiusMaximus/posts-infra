@@ -3,6 +3,10 @@
     metrics
 }
 
+posts-grafana.lacarte.dev {
+    reverse_proxy posts-grafana:3000
+}
+
 posts.lacarte.dev {
     reverse_proxy posts-gateway-api:8080
 }
