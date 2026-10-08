@@ -1,0 +1,15 @@
+name: redeploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  redeploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Trigger redeploy on VM
+        run: |
+          curl --max-time 15 -sS -X POST "${{ secrets.WEBHOOK_URL }}" \
+            -H "X-Webhook-Secret: ${{ secrets.WEBHOOK_SECRET }}"
