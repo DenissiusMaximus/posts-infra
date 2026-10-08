@@ -173,49 +173,9 @@ services:
     networks:
       - loki
 
-  posts-grafana:
-    image: grafana/grafana:${GRAFANA_VERSION:-latest}
-    container_name: posts-grafana
-    env_file:
-      - ./env/grafana.env
-    environment:
-      GF_PATHS_PROVISIONING: /etc/grafana/provisioning
-    depends_on:
-      - caddy
-    entrypoint:
-      - sh
-      - -euc
-      - |
-        mkdir -p /etc/grafana/provisioning/datasources
-        cat <<EOF > /etc/grafana/provisioning/datasources/ds.yaml
-        apiVersion: 1
-        datasources:
-          - name: Loki
-            type: loki
-            access: proxy
-            url: http://caddy:3100
-            jsonData:
-              httpHeaderName1: "X-Scope-OrgID"
-            secureJsonData:
-              httpHeaderValue1: "$${LOKI_TENANT_ID}"
-        EOF
-        /run.sh
-    ports:
-      - "${GRAFANA_PORT:-3001}:3000"
-    volumes:
-      - grafana_data:/var/lib/grafana
-    healthcheck:
-      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - loki
-
 volumes:
   posts_auth_pgdata:
   pgdata:
-  grafana_data:
   caddy_data:
   caddy_config:
 
