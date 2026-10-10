@@ -4,6 +4,10 @@ on:
   push:
     branches: [main]
 
+concurrency:
+  group: infra-redeploy-main
+  cancel-in-progress: false
+
 jobs:
   redeploy:
     runs-on: ubuntu-latest
@@ -11,5 +15,5 @@ jobs:
     steps:
       - name: Trigger redeploy on VM
         run: |
-          curl --max-time 15 -sS -X POST "${{ secrets.WEBHOOK_URL }}" \
+          curl --fail-with-body --retry 3 --retry-delay 5 --max-time 15 -sS -X POST "${{ secrets.WEBHOOK_URL }}" \
             -H "X-Webhook-Secret: ${{ secrets.WEBHOOK_SECRET }}"
