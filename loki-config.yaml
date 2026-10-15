@@ -11,13 +11,9 @@ common:
     kvstore:
       store: memberlist
   storage:
-    s3:
-      endpoint: http://posts-minio:9000
-      bucketnames: loki-data
-      access_key_id: ${MINIO_ROOT_USER}
-      secret_access_key: ${MINIO_ROOT_PASSWORD}
-      s3forcepathstyle: true
-      insecure: true
+    filesystem:
+      chunks_directory: /loki/chunks
+      rules_directory: /loki/rules
 
 memberlist:
   join_members:
@@ -29,7 +25,7 @@ schema_config:
   configs:
     - from: 2024-01-01
       store: tsdb
-      object_store: s3
+      object_store: filesystem
       schema: v13
       index:
         prefix: index_
@@ -39,9 +35,6 @@ storage_config:
   tsdb_shipper:
     active_index_directory: /loki/tsdb-index
     cache_location: /loki/tsdb-cache
-  aws:
-    s3: s3://dummy:dummy@posts-minio:9000/loki-data
-    s3forcepathstyle: true
 
 compactor:
   working_directory: /loki/compactor
@@ -56,14 +49,9 @@ limits_config:
 
 ruler:
   storage:
-    type: s3
-    s3:
-      endpoint: http://posts-minio:9000
-      bucketnames: loki-ruler
-      access_key_id: ${MINIO_ROOT_USER}
-      secret_access_key: ${MINIO_ROOT_PASSWORD}
-      s3forcepathstyle: true
-      insecure: true
+    type: local
+    local:
+      directory: /loki/rules
   rule_path: /loki/rules
   alertmanager_url: http://localhost:9093
   ring:

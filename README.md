@@ -51,7 +51,6 @@ separate files:
 | `posts-loki-read` | `env/loki-read.env` |
 | `posts-loki-write` | `env/loki-write.env` |
 | `posts-loki-backend` | `env/loki-backend.env` |
-| `posts-minio` | `env/minio.env` |
 
 Keep the real files out of source control. They are created from the tracked
 `env/*.env.example` templates and may contain secrets.
@@ -92,7 +91,6 @@ Edit only these variables in `.env` when a new image or tag is published:
 ```dotenv
 AUTH_API_IMAGE=ghcr.io/your-github-user/mytwitter-auth:latest
 GATEWAY_API_IMAGE=ghcr.io/your-github-user/mytwitter-gateway:latest
-MINIO_IMAGE=quay.io/minio/minio:latest
 ```
 
 Use immutable tags, such as a release number or Git commit, for predictable VM deployments. After changing a tag:
@@ -171,4 +169,4 @@ docker compose up -d
 docker compose down
 ```
 
-The Compose file keeps database, Caddy, and MinIO data in named or local volumes. `docker compose down` does not remove that data; do not use `down -v` unless you intentionally want to delete it.
+The Compose file keeps database, Caddy, Grafana, and Loki data in named or local volumes. `docker compose down` does not remove that data; do not use `down -v` unless you intentionally want to delete it.
