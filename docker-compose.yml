@@ -150,7 +150,7 @@ services:
       - loki
 
   posts-minio:
-    image: minio/minio
+    image: ${MINIO_IMAGE:-quay.io/minio/minio:latest}
     container_name: posts-minio
     entrypoint:
       - sh

@@ -92,6 +92,7 @@ Edit only these variables in `.env` when a new image or tag is published:
 ```dotenv
 AUTH_API_IMAGE=ghcr.io/your-github-user/mytwitter-auth:latest
 GATEWAY_API_IMAGE=ghcr.io/your-github-user/mytwitter-gateway:latest
+MINIO_IMAGE=quay.io/minio/minio:latest
 ```
 
 Use immutable tags, such as a release number or Git commit, for predictable VM deployments. After changing a tag:
