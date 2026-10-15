@@ -61,9 +61,10 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - loki
       - default
+      - loki
       - gateway_net
+    restart: unless-stopped
 
   posts-alloy:
     image: grafana/alloy:${ALLOY_VERSION:-latest}
@@ -78,6 +79,7 @@ services:
       - posts-loki
     networks:
       - loki
+    restart: unless-stopped
 
   posts-grafana:
     image: grafana/grafana:${GRAFANA_VERSION:-latest}
@@ -89,11 +91,14 @@ services:
       - GF_SERVER_ROOT_URL=${GF_SERVER_ROOT_URL:-https://posts-grafana.lacarte.dev}
     entrypoint:
       - sh
-      - -euc
+      - -c
       - |
         mkdir -p /etc/grafana/provisioning/datasources
-        cat <<EOF > /etc/grafana/provisioning/datasources/loki.yaml
+        cat <<'DSCONFIG' > /etc/grafana/provisioning/datasources/loki.yaml
         apiVersion: 1
+        deleteDatasources:
+          - name: Loki
+            orgId: 1
         datasources:
           - name: Loki
             uid: loki
@@ -101,14 +106,10 @@ services:
             access: proxy
             url: http://posts-loki:3100
             isDefault: true
-            version: 2
-            editable: true
-        EOF
-        /run.sh
-    ports:
-      - "${GRAFANA_PORT:-3001}:3000"
-    volumes:
-      - grafana_data:/var/lib/grafana
+            jsonData:
+              maxLines: 1000
+        DSCONFIG
+        exec /run.sh
     depends_on:
       - posts-loki
     healthcheck:
@@ -119,6 +120,7 @@ services:
     networks:
       - loki
       - gateway_net
+    restart: unless-stopped
 
 volumes:
   posts_auth_pgdata:
