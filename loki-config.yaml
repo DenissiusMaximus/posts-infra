@@ -7,20 +7,10 @@ server:
 common:
   path_prefix: /loki
   replication_factor: 1
-  compactor_address: http://posts-loki-backend:3100
-  ring:
-    kvstore:
-      store: memberlist
   storage:
     filesystem:
       chunks_directory: /loki/chunks
       rules_directory: /loki/rules
-
-memberlist:
-  join_members:
-    - posts-loki-read:7946
-    - posts-loki-write:7946
-    - posts-loki-backend:7946
 
 schema_config:
   configs:
@@ -37,12 +27,6 @@ storage_config:
     active_index_directory: /loki/tsdb-index
     cache_location: /loki/tsdb-cache
 
-compactor:
-  working_directory: /loki/compactor
-  compactor_ring:
-    kvstore:
-      store: memberlist
-
 limits_config:
   allow_structured_metadata: true
   volume_enabled: true
@@ -53,9 +37,5 @@ ruler:
     type: local
     local:
       directory: /loki/rules
-  rule_path: /loki/rules
-  alertmanager_url: http://localhost:9093
-  ring:
-    kvstore:
-      store: memberlist
-  enable_api: true
+    rule_path: /loki/rules
+    enable_api: true

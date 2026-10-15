@@ -61,9 +61,6 @@ separate files:
 | `posts-auth-db` | `env/auth-db.env` |
 | `posts-auth-api` | `env/auth-api.env` |
 | `posts-gateway-api` | `env/gateway-api.env` |
-| `posts-loki-read` | `env/loki-read.env` |
-| `posts-loki-write` | `env/loki-write.env` |
-| `posts-loki-backend` | `env/loki-backend.env` |
 
 Keep the real files out of source control. They are created from the tracked
 `env/*.env.example` templates and may contain secrets.
