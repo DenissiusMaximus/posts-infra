@@ -7,6 +7,7 @@ server:
 common:
   path_prefix: /loki
   replication_factor: 1
+  compactor_address: http://posts-loki-backend:3100
   ring:
     kvstore:
       store: memberlist
