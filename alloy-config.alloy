@@ -25,7 +25,7 @@ loki.source.docker "containers" {
 
 loki.write "default" {
   endpoint {
-    url = "http://caddy:3100/loki/api/v1/push"
+    url = "http://posts-loki-gateway:3100/loki/api/v1/push"
   }
 
   external_labels = {

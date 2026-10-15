@@ -50,9 +50,11 @@ services:
       - posts-loki-write
       - posts-loki-backend
     networks:
-      - default
-      - loki
-      - financial_proxy
+      default: {}
+      loki:
+        aliases:
+          - posts-loki-gateway
+      financial_proxy: {}
     restart: unless-stopped
 
   watchtower:
@@ -166,7 +168,7 @@ services:
           - name: Loki
             type: loki
             access: proxy
-            url: http://caddy:3100
+            url: http://posts-loki-gateway:3100
             isDefault: true
             jsonData:
               httpHeaderName1: "X-Scope-OrgID"
