@@ -39,8 +39,6 @@ services:
     image: caddy:${CADDY_VERSION:-alpine}
     container_name: posts-caddy
     ports:
-      - "80:80"
-      - "443:443"
       - "${CADDY_LOKI_GATEWAY_PORT:-3100}:3100"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
@@ -54,6 +52,7 @@ services:
     networks:
       - default
       - loki
+      - financial_proxy
     restart: unless-stopped
 
   watchtower:
@@ -186,6 +185,7 @@ services:
       retries: 5
     networks:
       - loki
+      - financial_proxy
 
 volumes:
   posts_auth_pgdata:
@@ -197,3 +197,6 @@ volumes:
 
 networks:
   loki:
+  financial_proxy:
+    external: true
+    name: financial-infra_default

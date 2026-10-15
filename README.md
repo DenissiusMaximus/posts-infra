@@ -30,6 +30,19 @@ The Loki datasource is provisioned automatically, so no manual Grafana
 configuration is required after deployment. Logs can be queried using the
 container labels collected by Alloy.
 
+This VM already has `financial-planner-caddy` listening on ports 80 and 443,
+so the posts Caddy does not publish those host ports. Add this route to the
+financial planner Caddyfile:
+
+```caddyfile
+posts-grafana {
+    reverse_proxy posts-grafana:3000
+}
+```
+
+The `posts-grafana` and `posts-caddy` containers are attached to the
+`financial-infra_default` network for this route.
+
 On Windows PowerShell, copy the environment file with:
 
 ```powershell
