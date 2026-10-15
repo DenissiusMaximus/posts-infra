@@ -19,6 +19,17 @@ docker compose up -d
 docker compose ps
 ```
 
+Grafana is deployed as `posts-grafana`, persists its data in the
+`grafana_data` volume, and is available through Caddy at:
+
+```text
+https://posts-grafana
+```
+
+The Loki datasource is provisioned automatically, so no manual Grafana
+configuration is required after deployment. Logs can be queried using the
+container labels collected by Alloy.
+
 On Windows PowerShell, copy the environment file with:
 
 ```powershell

@@ -2,3 +2,5 @@
 .env.*
 env/*.env
 !env/*.env.example
+auth-endpoints-smoke-result.md
+auth-endpoints-smoke-test.sh

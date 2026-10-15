@@ -7,6 +7,10 @@ posts.lacarte.dev {
     reverse_proxy posts-gateway-api:8080
 }
 
+posts-grafana {
+    reverse_proxy posts-grafana:3000
+}
+
 :3100 {
     @push path /loki/api/v1/push
     reverse_proxy @push posts-loki-write:3100
