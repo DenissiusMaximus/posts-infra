@@ -33,28 +33,9 @@ services:
       - ./env/gateway-api.env
     depends_on:
       - posts-auth-api
-    restart: unless-stopped
-
-  caddy:
-    image: caddy:${CADDY_VERSION:-alpine}
-    container_name: posts-caddy
-    ports:
-      - "${CADDY_LOKI_GATEWAY_PORT:-3100}:3100"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
-      - caddy_data:/data
-      - caddy_config:/config
-    depends_on:
-      - posts-gateway-api
-      - posts-loki-read
-      - posts-loki-write
-      - posts-loki-backend
     networks:
-      default: {}
-      loki:
-        aliases:
-          - posts-loki-gateway
-      financial_proxy: {}
+      - default
+      - gateway_net
     restart: unless-stopped
 
   watchtower:
@@ -85,10 +66,11 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    networks: &loki-dns
+    networks:
       loki:
         aliases:
           - loki
+      gateway_net: {}
 
   posts-loki-write:
     image: grafana/loki:${LOKI_VERSION:-latest}
@@ -110,7 +92,10 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      <<: *loki-dns
+      loki:
+        aliases:
+          - loki
+      gateway_net: {}
 
   posts-loki-backend:
     image: grafana/loki:${LOKI_VERSION:-latest}
@@ -142,8 +127,6 @@ services:
     command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
     ports:
       - "${ALLOY_UI_PORT:-12345}:12345"
-    depends_on:
-      - caddy
     networks:
       - loki
 
@@ -154,9 +137,7 @@ services:
       - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
       - GF_AUTH_ANONYMOUS_ENABLED=${GF_AUTH_ANONYMOUS_ENABLED:-true}
       - GF_AUTH_ANONYMOUS_ORG_ROLE=${GF_AUTH_ANONYMOUS_ORG_ROLE:-Admin}
-      - GF_SERVER_ROOT_URL=${GF_SERVER_ROOT_URL:-https://posts-grafana}
-    depends_on:
-      - caddy
+      - GF_SERVER_ROOT_URL=${GF_SERVER_ROOT_URL:-https://posts-grafana.lacarte.dev}
     entrypoint:
       - sh
       - -euc
@@ -168,7 +149,7 @@ services:
           - name: Loki
             type: loki
             access: proxy
-            url: http://posts-loki-gateway:3100
+            url: http://posts-loki-read:3100
             isDefault: true
             jsonData:
               httpHeaderName1: "X-Scope-OrgID"
@@ -187,18 +168,15 @@ services:
       retries: 5
     networks:
       - loki
-      - financial_proxy
+      - gateway_net
 
 volumes:
   posts_auth_pgdata:
-  pgdata:
-  caddy_data:
-  caddy_config:
   grafana_data:
   loki_data:
 
 networks:
+  default:
   loki:
-  financial_proxy:
+  gateway_net:
     external: true
-    name: financial-infra_default
