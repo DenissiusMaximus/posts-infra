@@ -51,8 +51,6 @@ services:
     image: grafana/loki:${LOKI_VERSION:-latest}
     container_name: posts-loki
     command: "-config.file=/etc/loki/config.yaml -config.expand-env=true"
-    ports:
-      - "3100:3100"
     volumes:
       - ./loki-config.yaml:/etc/loki/config.yaml
       - loki_data:/loki
