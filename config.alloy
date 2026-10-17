@@ -1,3 +1,4 @@
+// --- ЗБІР ЛОГІВ DOCKER (Loki) ---
 discovery.docker "containers" {
   host = "unix:///var/run/docker.sock"
 }
@@ -5,31 +6,45 @@ discovery.docker "containers" {
 loki.source.docker "docker_logs" {
   host       = "unix:///var/run/docker.sock"
   targets    = discovery.docker.containers.targets
+  forward_to = [loki.process.add_labels.receiver]
+}
+
+loki.process "add_labels" {
+  // Витягуємо назву контейнера та compose-сервісу з метаданих Docker
+  stage.labels {
+    values = {
+      service_name    = "container_name",
+      container       = "container_name",
+      compose_service = "com_docker_compose_service",
+    }
+  }
+
   forward_to = [loki.write.loki_endpoint.receiver]
 }
 
 loki.write "loki_endpoint" {
   endpoint {
-    url = "http://loki:3100/loki/api/v1/push"
+    url = "http://posts-loki:3100/loki/api/v1/push"
   }
 }
 
+// --- ЗБІР МЕТРИК (Prometheus) ---
 prometheus.scrape "cadvisor" {
   targets = [{
-    __address__ = "cadvisor:8080",
+    __address__ = "posts-cadvisor:8080",
   }]
   forward_to = [prometheus.remote_write.demo.receiver]
 }
 
 prometheus.scrape "node_exporter" {
   targets = [{
-    __address__ = "node_exporter:9100",
+    __address__ = "posts-node-exporter:9100",
   }]
   forward_to = [prometheus.remote_write.demo.receiver]
 }
 
 prometheus.remote_write "demo" {
   endpoint {
-    url = "http://prometheus:9090/api/v1/write"
+    url = "http://posts-prometheus:9090/api/v1/write"
   }
 }
