@@ -19,29 +19,8 @@ docker compose up -d
 docker compose ps
 ```
 
-Grafana is deployed as `posts-grafana`, persists its data in the
-`grafana_data` volume, and is available through Caddy at:
-
-```text
-https://posts-grafana
-```
-
-The Loki datasource is provisioned automatically, so no manual Grafana
-configuration is required after deployment. Logs can be queried using the
-container labels collected by Alloy.
-
 This VM already has `financial-planner-caddy` listening on ports 80 and 443,
-so the posts Caddy does not publish those host ports. Add this route to the
-financial planner Caddyfile:
-
-```caddyfile
-posts-grafana {
-    reverse_proxy posts-grafana:3000
-}
-```
-
-The `posts-grafana` and `posts-caddy` containers are attached to the
-`financial-infra_default` network for this route.
+so the posts Caddy does not publish those host ports.
 
 On Windows PowerShell, copy the environment file with:
 
@@ -135,7 +114,7 @@ NOTIFICATIONS_API_IMAGE=ghcr.io/grid-mint/notifications/api:latest
 Create `env/notifications-api.env.example` beside the Compose service, copy it
 to `env/notifications-api.env`, and put only this container's variables in it.
 
-The service automatically joins the default Compose network and can reach other services by their Compose names, for example `http://posts-auth-api:8080`. If it needs Loki access, add `networks: [loki]` as well.
+The service automatically joins the default Compose network and can reach other services by their Compose names, for example `http://posts-auth-api:8080`.
 
 3. If the service must be public, add a host to `Caddyfile`:
 
@@ -179,4 +158,4 @@ docker compose up -d
 docker compose down
 ```
 
-The Compose file keeps database, Caddy, Grafana, and Loki data in named or local volumes. `docker compose down` does not remove that data; do not use `down -v` unless you intentionally want to delete it.
+The Compose file keeps database data in a named volume. `docker compose down` does not remove that data; do not use `down -v` unless you intentionally want to delete it.
