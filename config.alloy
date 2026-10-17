@@ -3,23 +3,32 @@ discovery.docker "containers" {
   host = "unix:///var/run/docker.sock"
 }
 
+// Витягуємо метадані Docker і перетворюємо їх на постійні лейбли
+loki.relabel "add_container_labels" {
+  forward_to = [loki.write.loki_endpoint.receiver]
+
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "/(.*)"
+    target_label  = "container"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "/(.*)"
+    target_label  = "service_name"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+    target_label  = "compose_service"
+  }
+}
+
 loki.source.docker "docker_logs" {
   host       = "unix:///var/run/docker.sock"
   targets    = discovery.docker.containers.targets
-  forward_to = [loki.process.add_labels.receiver]
-}
-
-loki.process "add_labels" {
-  // Витягуємо назву контейнера та compose-сервісу з метаданих Docker
-  stage.labels {
-    values = {
-      service_name    = "container_name",
-      container       = "container_name",
-      compose_service = "com_docker_compose_service",
-    }
-  }
-
-  forward_to = [loki.write.loki_endpoint.receiver]
+  forward_to = [loki.relabel.add_container_labels.receiver]
 }
 
 loki.write "loki_endpoint" {
