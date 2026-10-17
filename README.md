@@ -133,9 +133,7 @@ docker compose up -d posts-notifications-api
 docker compose logs -f posts-notifications-api
 ```
 
-If Watchtower should update it automatically, add `posts-notifications-api` to its `command` list in `docker-compose.yml`. Otherwise update it manually with the commands above.
-
-Watchtower is enabled for these two application services and checks for new images every 60 seconds. It requires the Docker socket and a readable Docker GHCR login configuration. For a manual and predictable update, use the commands above instead.
+Update new services manually with the commands above.
 
 ## GHCR authentication
 

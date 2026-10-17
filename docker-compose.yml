@@ -38,15 +38,6 @@ services:
       - gateway_net
     restart: unless-stopped
 
-  watchtower:
-    image: nickfedor/watchtower
-    container_name: posts-watchtower
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ${DOCKER_CONFIG_PATH:-/root/.docker/config.json}:/config.json:ro
-    command: --interval 60 --cleanup posts-auth-api posts-gateway-api
-    restart: unless-stopped
-
 volumes:
   posts_auth_pgdata:
 
